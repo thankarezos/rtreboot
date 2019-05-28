@@ -1,0 +1,42 @@
+#!/bin/bash
+# replace cmd1 for the command to execute
+shname=$(basename -- "$0")
+if [ ! -f ~/.rtpass ];then
+	echo "$shname: No password file. Creating one" >&2
+	read -p "Enter Username: " >&2 a
+	read -p "Enter Password: " >&2 b
+	printf  "user=$a\npass=$b\n" > ~/.rtpass
+	if [ $# -eq 0 ];then
+		exit 5
+	fi
+fi
+source ~/.rtpass
+echo "Username=$user"
+echo "Password=$pass"
+echo "Enter \"router new\" to change them"
+if [ ! $# -ge 1 ];then
+	echo "$shname: error in number of parameters" >&2
+	exit 1
+fi
+if [ $1 = "new" ];then
+	read -p "$shname: Enter Username: " >&2 a
+	read -p "$shname: Enter Password: " >&2 b
+	printf  "user=$a\npass=$b\n" > ~/.rtpass
+	exit 4
+fi
+for i in $@
+do
+	cmd1="$cmd1 $i"
+done
+host=192.168.1.1
+port=23
+
+(echo open ${host}
+sleep 1
+echo ${user}
+sleep 1
+echo ${pass}
+sleep 1
+echo ${cmd1}
+sleep 10
+ ) | telnet
